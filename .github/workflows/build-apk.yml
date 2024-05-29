@@ -1,0 +1,32 @@
+name: Build Flutter Android App
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: ${{ contains(github.event.head_commit.message, '[gen-build]') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.11'
+
+      - name: Install dependencies
+        run: flutter pub get
+    
+      - name: Build APK
+        run: flutter build apk --profile --obfuscate --split-debug-info=build/app/outputs --flavor mobile
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-mobile-profile.apk
